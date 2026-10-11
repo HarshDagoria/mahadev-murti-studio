@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function admin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.firebase.sign_in_provider == 'password';
+    }
+
+    match /galleryWorks/{code} {
+      allow read: if true;
+      allow create, update, delete: if admin();
+    }
+
+    match /site/{document} {
+      allow read, write: if admin();
+    }
+
+    match /inquiries/{inquiryId} {
+      allow create: if request.resource.data.status == 'new'
+        && request.resource.data.name is string
+        && (request.resource.data.email is string || request.resource.data.phone is string);
+      allow read, update, delete: if admin();
+    }
+  }
+}
