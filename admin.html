@@ -291,6 +291,7 @@
   const STORAGE_ALBUM_COVERS = 'mahadevAlbumCovers';
   const STORAGE_DELETED_WORKS = 'mahadevDeletedWorks';
   const STORAGE_PUBLISHED_STATE = 'mahadevPublishedState';
+  const PERMANENTLY_REMOVED_WORKS = new Set(['STN.26.07', 'GLD.24.01', 'FBC.26.02']);
 
   let adminWorksCache = [];
   let heroOverridesCache = {};
@@ -433,7 +434,7 @@
   }
 
   function isDeleted(work){
-    return loadDeletedWorks().includes(work.code);
+    return PERMANENTLY_REMOVED_WORKS.has(work.code) || loadDeletedWorks().includes(work.code);
   }
 
   function currentHeroCount(){
