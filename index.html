@@ -282,6 +282,22 @@
   .carousel-dots .dot{width:6px;height:6px;border-radius:50%;background:var(--line);padding:0;transition:all .35s var(--ease);}
   .carousel-dots .dot.active{width:22px;border-radius:4px;background:var(--gold);}
   .carousel-hint{text-align:center;margin-top:14px;font-size:10.5px;color:var(--stone);}
+  @media(max-width:640px){
+    .hero{gap:26px;padding:104px 0 38px;}
+    .hero-eyebrow{font-size:10px;margin-bottom:14px;}
+    .hero h1{font-size:clamp(30px,9.5vw,46px);line-height:1.02;max-width:15ch;}
+    .hero-sub{max-width:34ch;margin-top:15px;font-size:14px;line-height:1.45;}
+    .hero-actions{margin-top:21px;gap:13px;}
+    .btn-primary{padding:12px 18px;font-size:11px;}
+    .btn-ghost{font-size:11px;}
+    .carousel-track{padding:8px 0 18px;}
+    .hero-card{width:158px;margin:0 8px;}
+    .hero-card.is-active{transform:scale(1.04);}
+    .hero-card figcaption{margin-top:9px;}
+    .hero-card .cat-no{font-size:9px;}
+    .hero-card .title{font-size:12px;}
+    .carousel-hint{margin-top:8px;font-size:9px;}
+  }
 
   /* ---------- section shells ---------- */
   section{padding:130px 0;position:relative;}
@@ -1380,6 +1396,7 @@
   let heroVisualIndex = 0;
   let heroDrag = null;
   let suppressHeroClick = false;
+  let heroAutoplayTimer = null;
 
   function updateHeroState(index, visualIndex = heroVisualIndex){
     activeHeroIndex = index;
@@ -1484,10 +1501,25 @@
     heroVisualIndex = heroWorks.length * 2;
     centerHero(0, false);
     heroTrack.setAttribute('aria-live', 'off');
+    startHeroAutoplay();
+  }
+
+  function stopHeroAutoplay(){
+    if (heroAutoplayTimer) {
+      clearInterval(heroAutoplayTimer);
+      heroAutoplayTimer = null;
+    }
+  }
+
+  function startHeroAutoplay(){
+    stopHeroAutoplay();
+    if (window.innerWidth > 767 || window.matchMedia('(prefers-reduced-motion: reduce)').matches || heroWorks.length < 2) return;
+    heroAutoplayTimer = setInterval(() => centerHero(activeHeroIndex + 1), 5000);
   }
 
   heroViewport?.addEventListener('pointerdown', (event) => {
     if (!event.isPrimary || event.button > 0) return;
+    stopHeroAutoplay();
     suppressHeroClick = false;
     heroDrag = {
       pointerId: event.pointerId,
@@ -1519,6 +1551,7 @@
       heroVisualIndex = nearestHeroVisualIndex();
       centerHero(Number(heroTrack.querySelector(`.hero-card[data-visual="${heroVisualIndex}"]`)?.dataset.real ?? activeHeroIndex));
     }
+    startHeroAutoplay();
   }
 
   heroViewport?.addEventListener('pointerup', finishHeroDrag);
@@ -1541,6 +1574,15 @@
   heroNextBtn?.addEventListener('click', () => {
     centerHero(activeHeroIndex + 1);
   });
+
+  let heroResizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(heroResizeTimer);
+    heroResizeTimer = setTimeout(() => {
+      centerHero(activeHeroIndex, false);
+      startHeroAutoplay();
+    }, 120);
+  }, {passive:true});
 
   heroViewport?.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') {
