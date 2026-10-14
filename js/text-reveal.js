@@ -84,7 +84,7 @@
         const word = document.createElement('span');
         word.className = 'cw-word';
         word.textContent = part;
-        word.style.setProperty('--cw-delay', `${Math.min(wordIndex * 45, 450)}ms`);
+        word.style.setProperty('--cw-delay', `${Math.min(wordIndex * 35, 350)}ms`);
         fragment.appendChild(word);
         wordIndex++;
       });

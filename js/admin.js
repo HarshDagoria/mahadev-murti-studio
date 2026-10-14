@@ -48,12 +48,25 @@
     });
   }
 
+  let inquiryUnsubscribe = null;
+
+  function startLiveInquirySync() {
+    if (!firebaseApi || !list || typeof firebaseApi.watchInquiries !== 'function') return;
+    if (inquiryUnsubscribe) inquiryUnsubscribe();
+    inquiryUnsubscribe = firebaseApi.watchInquiries(items => {
+      renderInquiries(items);
+    });
+  }
+
   api.loadInquiries = async function () {
     if (!firebaseApi || !list) return;
     try {
-      renderInquiries(await firebaseApi.listInquiries());
+      const items = await firebaseApi.listInquiries();
+      renderInquiries(items);
+      startLiveInquirySync();
     } catch (error) {
       list.innerHTML = '<p class="sub">Sign in with the admin account to view inquiries.</p>';
+      startLiveInquirySync();
     }
   };
 

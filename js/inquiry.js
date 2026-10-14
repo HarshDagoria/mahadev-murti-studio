@@ -6,6 +6,7 @@
 
   form.dataset.inquiryBound = 'true';
   form.addEventListener('submit', function () {
+    if (form.dataset.inquirySubmitting === 'true') return;
     form.dataset.submittedAt = String(Date.now());
   });
 })();

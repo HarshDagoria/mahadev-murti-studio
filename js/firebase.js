@@ -229,11 +229,37 @@ const CLOUDINARY_MAX_FILE_SIZE = 10 * 1024 * 1024;
   api.signIn = signIn;
   api.signOut = signOut;
   api.loadWorks = loadWorks;
+  api.watchWorks = function (callback) {
+    if (!start()) return () => {};
+    return db.collection('galleryWorks').onSnapshot(snapshot => {
+      const works = snapshot.docs.map(doc => normaliseWork(doc.data())).filter(work => work.code);
+      callback(works, snapshot);
+    }, error => {
+      console.error('[Mahadev Gallery] Firestore live sync failed', {
+        code: error.code || null,
+        message: error.message
+      });
+      callback([], null);
+    });
+  };
   api.uploadArtwork = uploadArtwork;
   api.updateArtwork = updateArtwork;
   api.deleteArtwork = deleteArtwork;
   api.createInquiry = createInquiry;
   api.listInquiries = listInquiries;
+  api.watchInquiries = function (callback) {
+    if (!start()) return () => {};
+    return db.collection('inquiries').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      callback(items, snapshot);
+    }, error => {
+      console.error('[Mahadev Inquiries] Firestore live sync failed', {
+        code: error.code || null,
+        message: error.message
+      });
+      callback([], null);
+    });
+  };
   api.updateInquiry = updateInquiry;
   api.deleteInquiry = deleteInquiry;
   window.MahadevFirebase = api;
